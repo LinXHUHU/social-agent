@@ -15,7 +15,7 @@ AI 驱动的实时社交指导系统。用户在社交场合通过手机接收 A
 ## 技术栈
 
 - 语言：Python 3.11+
-- AI：Claude API（Sonnet 为主，复杂场景 Opus）
+- AI：DeepSeek-V3 API（全模块统一，后续可选升级 R1 做深度分析）
 - 存储：本地 JSON（第一版），后续迁移至 PostgreSQL + pgvector + Redis
 - CLI：Click + Rich
 - 依赖：anthropic SDK, Pillow（截图分析）
