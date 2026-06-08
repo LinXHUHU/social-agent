@@ -35,9 +35,11 @@ def add(name, relationship):
     """交互式创建画像"""
     from rich.prompt import Prompt
 
-    p = engine.create(name, initial={
-        "basic": {"name": name, "relationship": relationship}
-    })
+    p = engine.create(name)
+    p.basic.relationship = relationship
+    from datetime import datetime
+    p.updated_at = datetime.now().isoformat()
+    storage.save(p)
 
     if click.confirm("是否现在完善画像?"):
         goal = Prompt.ask("  你对此人的目标", default="")
