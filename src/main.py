@@ -122,5 +122,87 @@ def edit(persona_id, field, value):
     console.print(f"[green]✓ 已更新 {persona_id} 的 {field}[/green]")
 
 
+@main.group()
+def coach():
+    """教练指导"""
+    pass
+
+
+@coach.command()
+@click.argument("persona_id")
+@click.option("--scene", "-s", default="", help="场景描述，如'公司茶水间'")
+def strategy(persona_id, scene):
+    """见面前的策略分析"""
+    from src.coach.engine import CoachEngine
+    p = engine.get(persona_id)
+    ce = CoachEngine()
+    console.print(f"\n[bold cyan]分析 {p.basic.name}...[/bold cyan]")
+    result = ce.advise_strategy(p, scene)
+    console.print(Panel(result, title="策略建议", border_style="green"))
+
+
+@coach.command()
+@click.argument("persona_id")
+def live(persona_id):
+    """进入实时指导交互模式（文本模拟）"""
+    from src.coach.engine import CoachEngine
+    p = engine.get(persona_id)
+    ce = CoachEngine()
+
+    console.print(f"\n[bold cyan]📋 已加载画像：{p.basic.name}（{p.basic.relationship}）[/bold cyan]")
+    if p.goals.my_goal:
+        console.print(f"[dim]🎯 当前目标：{p.goals.my_goal}[/dim]")
+
+    result = ce.advise_strategy(p, "文本聊天")
+    console.print(Panel(result, title="💡 建议策略", border_style="green"))
+
+    console.print("\n[dim][输入对方说的话，或 /help 查看命令][/dim]\n")
+
+    context: list[str] = []
+
+    while True:
+        try:
+            user_input = click.prompt("> ", prompt_suffix="")
+        except (KeyboardInterrupt, EOFError):
+            console.print("\n[dim]已退出[/dim]")
+            break
+
+        user_input = user_input.strip()
+        if user_input.lower() in ("/exit", "/quit", "/q"):
+            break
+        elif user_input.startswith("/warmup"):
+            result = ce.advise_warmup(p, context)
+            console.print(Panel(result, title="🧊 暖场话题", border_style="yellow"))
+            continue
+        elif user_input.startswith("/help"):
+            console.print("""[bold]可用命令:[/bold]
+  <任意文本>     输入对方说的话，AI 分析 + 给话术建议
+  /warmup        手动请求暖场话题
+  /exit, /q      退出
+  Ctrl+C         退出""")
+            continue
+        elif not user_input:
+            continue
+
+        context.append(user_input)
+
+        analysis = ce.advise_analysis(p, user_input, context[:-1])
+        console.print(Panel(analysis, title="🤔 分析", border_style="blue"))
+
+        reply = ce.advise_reply(p, context)
+        console.print(Panel(reply, title="💬 回复建议", border_style="green"))
+
+
+@coach.command()
+@click.argument("persona_id")
+def warmup(persona_id):
+    """手动请求暖场话题"""
+    from src.coach.engine import CoachEngine
+    p = engine.get(persona_id)
+    ce = CoachEngine()
+    result = ce.advise_warmup(p)
+    console.print(Panel(result, title="🧊 暖场话题", border_style="yellow"))
+
+
 if __name__ == "__main__":
     main()
