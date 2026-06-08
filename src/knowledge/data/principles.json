@@ -1,0 +1,67 @@
+[
+  {
+    "principle_id": "how_to_win_01",
+    "source_type": "book",
+    "source_title": "人性的弱点",
+    "source_chapter": "如何让他人喜欢你",
+    "principle": "真诚地关心他人，而不是假装关心",
+    "category": "通用社交",
+    "applicable_scenarios": ["初次见面", "维系关系", "职场"],
+    "how_to_apply": "记住对方提到的细节（生日、爱好、家人），下次聊天时自然提起",
+    "counter_example": "只记住信息但不主动提起，对方会觉得你并不真的关心",
+    "related_principles": ["how_to_win_03"],
+    "effectiveness": null
+  },
+  {
+    "principle_id": "nvc_01",
+    "source_type": "book",
+    "source_title": "非暴力沟通",
+    "source_chapter": "区分观察和评论",
+    "principle": "表达观察到的事实而非评价，减少对方的防御反应",
+    "category": "冲突处理",
+    "applicable_scenarios": ["意见分歧", "职场反馈", "亲密关系"],
+    "how_to_apply": "说'你刚才打断了3次我的发言'，而不是说'你总是不尊重我'",
+    "counter_example": "'你这样做太差劲了' — 这是评价不是观察，对方会立即防御",
+    "related_principles": ["nvc_02"],
+    "effectiveness": null
+  },
+  {
+    "principle_id": "intimacy_01",
+    "source_type": "book",
+    "source_title": "亲密关系",
+    "source_chapter": "吸引力与接近性",
+    "principle": "曝光效应：人们更容易对熟悉的人产生好感，但需要是正面互动",
+    "category": "约会",
+    "applicable_scenarios": ["初次见面", "暧昧期", "约会"],
+    "how_to_apply": "创造频繁但不刻意的正面接触机会，保持轻松愉快的印象",
+    "counter_example": "频繁发消息但内容无趣或负面，反而让人厌烦",
+    "related_principles": [],
+    "effectiveness": null
+  },
+  {
+    "principle_id": "mars_venus_01",
+    "source_type": "book",
+    "source_title": "男人来自火星女人来自金星",
+    "source_chapter": "男女沟通差异",
+    "principle": "女性倾诉时通常需要共情而非解决方案，男性则需要被认可",
+    "category": "异性社交",
+    "applicable_scenarios": ["约会", "亲密关系", "朋友"],
+    "how_to_apply": "对方倾诉烦恼时，先说'听起来你真的很不容易'再问'需要我帮忙想方案吗？'",
+    "counter_example": "直接跳过共情给方案：'你换个工作不就行了'",
+    "related_principles": [],
+    "effectiveness": null
+  },
+  {
+    "principle_id": "influence_01",
+    "source_type": "book",
+    "source_title": "影响力",
+    "source_chapter": "喜好原理",
+    "principle": "人们更容易被自己喜欢的人说服，相似性是好感的关键来源",
+    "category": "通用社交",
+    "applicable_scenarios": ["初次见面", "谈判", "职场"],
+    "how_to_apply": "找到与对方的真实共同点（兴趣/背景/观点），在对话早期自然提及",
+    "counter_example": "虚伪地假装有共同兴趣 — 被发现后破坏信任",
+    "related_principles": [],
+    "effectiveness": null
+  }
+]
