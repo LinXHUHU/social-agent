@@ -124,6 +124,48 @@ def edit(persona_id, field, value):
     console.print(f"[green]✓ 已更新 {persona_id} 的 {field}[/green]")
 
 
+@persona.command()
+def me_show():
+    """查看自己的画像"""
+    from src.self_profile import load as load_self
+    p = load_self()
+    console.print(f"\n[bold cyan]━━━ 自我画像 ━━━[/bold cyan]")
+    console.print(f"  姓名: {p.name}")
+    traits_str = ', '.join(p.personality.traits) or '(未设定)'
+    console.print(f"  性格特征: {traits_str}")
+    console.print(f"  沟通风格: {p.personality.communication_style or '(未设定)'}")
+    phrases_str = ', '.join(p.personality.catchphrases) or '(无)'
+    console.print(f"  常用口头禅: {phrases_str}")
+    console.print(f"  价值观: {', '.join(p.personality.values) or '(未设定)'}")
+    console.print(f"\n文件位置: ~/.social-agent/self.json")
+
+
+@persona.command()
+@click.option("--field", "-f", default=None, help="字段路径，如 personality.communication_style")
+@click.option("--value", "-v", default=None, help="新值")
+def me_edit(field, value):
+    """编辑自己的画像。不加参数则打开JSON文件直接编辑。"""
+    from src.self_profile import load as load_self, save as save_self
+    if not field:
+        editor = os.environ.get("EDITOR", "vim")
+        config_path = Path.home() / ".social-agent" / "self.json"
+        subprocess.call([editor, str(config_path)])
+        console.print(f"[green]✓ 请用编辑器修改 {config_path}[/green]")
+        return
+    p = load_self()
+    try:
+        parsed = json.loads(value)
+    except (json.JSONDecodeError, ValueError):
+        parsed = value
+    parts = field.split(".")
+    obj = p
+    for part in parts[:-1]:
+        obj = getattr(obj, part)
+    setattr(obj, parts[-1], parsed)
+    save_self(p)
+    console.print(f"[green]✓ 已更新自己的画像: {field}[/green]")
+
+
 @main.group()
 def coach():
     """教练指导"""

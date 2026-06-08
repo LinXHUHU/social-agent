@@ -3,6 +3,7 @@ from src.persona.models import Persona
 from src.coach import prompts
 from src.knowledge.base import KnowledgeBase
 from src.utils.deepseek import chat
+from src import self_profile
 
 
 class CoachEngine:
@@ -24,10 +25,13 @@ class CoachEngine:
             lines.append(f"- {p.principle}：{p.how_to_apply}")
         return "\n".join(lines)
 
+    def _my_style(self) -> str:
+        return self_profile.get_style()
+
     def advise_strategy(self, persona: Persona, scene: str = "") -> str:
         knowledge = self._inject_knowledge(persona)
         persona_json = prompts._render_persona(persona)
-        user = f"## 人物画像\n{persona_json}\n{knowledge}\n\n## 当前场景\n{scene or '即将见面'}\n请给出策略分析。"
+        user = f"## 人物画像\n{persona_json}\n{knowledge}\n\n## 我的风格\n{self._my_style()}\n\n## 当前场景\n{scene or '即将见面'}\n请给出策略分析。"
         return chat(system=prompts.STRATEGY_SYSTEM, user=user)
 
     def advise_analysis(self, persona: Persona, utterance: str,
@@ -41,11 +45,12 @@ class CoachEngine:
                      style: str = "") -> str:
         persona_json = prompts._render_persona(persona)
         ctx = "\n".join(f"- {line}" for line in context[-10:])
-        user = f"## 人物画像\n{persona_json}\n\n## 对话上下文\n{ctx}\n\n## 我的说话风格\n{style or persona.personality.communication_style or '自然随意'}\n请生成回复建议。"
+        my_style = style or self._my_style()
+        user = f"## 人物画像\n{persona_json}\n\n## 对话上下文\n{ctx}\n\n## 我的说话风格\n{my_style}\n请生成回复建议。"
         return chat(system=prompts.REPLY_SYSTEM, user=user, max_tokens=500)
 
     def advise_warmup(self, persona: Persona, context: list[str] | None = None) -> str:
         persona_json = prompts._render_persona(persona)
         ctx = "\n".join(f"- {line}" for line in (context or [])[-5:])
-        user = f"## 人物画像\n{persona_json}\n\n## 最近对话\n{ctx or '(无)'}\n\n检测到冷场，请生成暖场话题。"
+        user = f"## 人物画像\n{persona_json}\n\n## 我的风格\n{self._my_style()}\n\n## 最近对话\n{ctx or '(无)'}\n\n检测到冷场，请生成暖场话题。"
         return chat(system=prompts.WARMUP_SYSTEM, user=user, max_tokens=600)
