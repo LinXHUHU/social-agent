@@ -204,5 +204,123 @@ def warmup(persona_id):
     console.print(Panel(result, title="🧊 暖场话题", border_style="yellow"))
 
 
+@main.group()
+def analyze():
+    """对话分析"""
+    pass
+
+
+@analyze.command()
+@click.argument("text_file")
+@click.option("--persona-id", "-p", default=None, help="关联的人物画像ID")
+def text(text_file, persona_id):
+    """分析对话文本文件"""
+    from pathlib import Path
+    from src.analyzer.engine import Analyzer
+    from src.analyzer.merger import merge_updates
+
+    content = Path(text_file).read_text()
+    persona = engine.get(persona_id) if persona_id else None
+
+    console.print("[bold]正在分析对话...[/bold]")
+    analyzer_obj = Analyzer()
+    result = analyzer_obj.analyze(content, persona)
+
+    report = result.get("report", result)
+    console.print(Panel(str(report), title="📊 分析报告", border_style="blue"))
+
+    updates = analyzer_obj.suggest_updates(result)
+    if updates and persona:
+        console.print(f"\n[yellow]发现 {len(updates)} 条画像更新建议[/yellow]")
+        for i, u in enumerate(updates):
+            console.print(f"  [{i+1}] {u['field']} ← {u.get('value', '')}")
+
+        if click.confirm("是否应用这些更新?"):
+            updated, conflicts = merge_updates(persona, updates)
+            from datetime import datetime
+            updated.version = persona.version + 1
+            updated.updated_at = datetime.now().isoformat()
+            from src.persona import storage
+            storage.save(updated)
+            console.print(f"[green]✓ 画像已更新[/green]")
+            for c in conflicts:
+                console.print(f"  [yellow]⚠ {c['reason']}[/yellow]")
+
+
+@analyze.command()
+@click.argument("image_path")
+@click.option("--persona-id", "-p", default=None, help="关联的人物画像ID")
+def screenshot(image_path, persona_id):
+    """分析聊天截图"""
+    from src.utils.screenshot import extract_text
+    from src.analyzer.engine import Analyzer
+
+    console.print("[bold]正在识别截图中的对话...[/bold]")
+    text_content = extract_text(image_path)
+    console.print(f"[dim]识别结果:[/dim]\n{text_content}\n")
+
+    persona = engine.get(persona_id) if persona_id else None
+    analyzer_obj = Analyzer()
+    result = analyzer_obj.analyze(text_content, persona)
+
+    report = result.get("report", result)
+    console.print(Panel(str(report), title="📊 分析报告", border_style="blue"))
+
+
+@main.group()
+def knowledge():
+    """社交知识库管理"""
+    pass
+
+
+@knowledge.command()
+def list():
+    """列出所有原则"""
+    from src.knowledge.base import KnowledgeBase
+    kb = KnowledgeBase()
+    principles = kb.list_all()
+    console.print(f"\n共 {len(principles)} 条原则:\n")
+    for p in principles:
+        console.print(f"[cyan]{p.principle_id}[/cyan] [{p.source_title}] {p.principle}")
+        console.print(f"  场景: {', '.join(p.applicable_scenarios)}")
+
+
+@knowledge.command()
+@click.argument("query")
+def search(query):
+    """搜索原则"""
+    from src.knowledge.base import KnowledgeBase
+    kb = KnowledgeBase()
+    results = kb.search(scene_labels=[query], limit=5)
+    if not results:
+        results = kb.search(scene_labels=["通用社交"], limit=3)
+    for p in results:
+        console.print(Panel(
+            f"[bold]{p.principle}[/bold]\n来源: {p.source_title}\n做法: {p.how_to_apply}",
+            title=p.principle_id
+        ))
+
+
+@knowledge.command()
+@click.option("--principle", prompt="原则内容")
+@click.option("--source", prompt="来源书名")
+@click.option("--category", prompt="分类", default="通用社交")
+def add(principle, source, category):
+    """手动添加原则"""
+    from src.knowledge.base import KnowledgeBase
+    kb = KnowledgeBase()
+    pid = kb.add({
+        "principle_id": f"user_{len(kb.list_all()) + 1:03d}",
+        "source_type": "manual",
+        "source_title": source,
+        "principle": principle,
+        "category": category,
+        "applicable_scenarios": [],
+        "how_to_apply": "",
+        "counter_example": "",
+    })
+    console.print(f"[green]✓ 已添加: {pid}[/green]")
+
+
 if __name__ == "__main__":
     main()
