@@ -49,8 +49,8 @@ class PersonaEngine:
 def _slugify(name: str) -> str:
     import re
     slug = name.strip().lower().replace(" ", "_")
-    slug = re.sub(r"[^a-z0-9_]", "", slug)
-    return slug
+    slug = re.sub(r"[^\w]", "", slug)
+    return slug or "persona"
 
 
 def _merge_field(persona: Persona, field: str, value) -> Persona:
@@ -72,7 +72,13 @@ def _merge_field(persona: Persona, field: str, value) -> Persona:
                     # update lower confidence entry
                     existing[i] = item.model_copy(update=value)
                     return persona
-        existing.append(type(existing[0])(**value) if existing else value)
+        if existing:
+            existing.append(type(existing[0])(**value))
+        elif field.startswith("personality.traits"):
+            from src.persona.models import Trait
+            existing.append(Trait(**value))
+        else:
+            existing.append(value)
     elif isinstance(value, str):
         if value not in existing:
             existing.append(value)
